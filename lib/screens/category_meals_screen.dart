@@ -3,6 +3,7 @@ import '../services/api_service.dart';
 import '../widgets/meal_card.dart';
 import '../models/meal.dart';
 import 'meal_detail_screen.dart';
+import '../services/favorites_service.dart';
 
 class CategoryMealsScreen extends StatefulWidget {
   final String categoryName;
@@ -14,6 +15,8 @@ class CategoryMealsScreen extends StatefulWidget {
 
 class _CategoryMealsScreenState extends State<CategoryMealsScreen> {
   final ApiService api = ApiService();
+  final FavoritesService favoritesService = FavoritesService();
+
   List<Meal> meals = [];
   List<Meal> filteredMeals = [];
   bool isLoading = true;
@@ -57,6 +60,10 @@ class _CategoryMealsScreenState extends State<CategoryMealsScreen> {
     }
   }
 
+  Future<bool> isFavorite(String mealId) async {
+    return await favoritesService.isFavorite(mealId);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -90,11 +97,30 @@ class _CategoryMealsScreenState extends State<CategoryMealsScreen> {
               itemCount: filteredMeals.length,
               itemBuilder: (context, index) {
                 final meal = filteredMeals[index];
-                return MealCard(
-                  meal: meal,
-                  onTap: () async {
-                    final detailedMeal = await api.getMealDetail(meal.id);
-                    Navigator.push(context, MaterialPageRoute(builder: (_) => MealDetailScreen(meal: detailedMeal)));
+                return FutureBuilder<bool>(
+                  future: isFavorite(meal.id),
+                  builder: (context, snapshot) {
+                    bool favorite = snapshot.data ?? false;
+                    return MealCard(
+                      meal: meal,
+                      isFavorite: favorite,
+                      onFavoriteToggle: () async {
+                        if (favorite) {
+                          await favoritesService.removeFavorite(meal.id);
+                        } else {
+                          final detailedMeal = await api.getMealDetail(meal.id);
+                          await favoritesService.addFavorite(detailedMeal);
+                        }
+                        setState(() {});
+                      },
+                      onTap: () async {
+                        final detailedMeal = await api.getMealDetail(meal.id);
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => MealDetailScreen(meal: detailedMeal)),
+                        );
+                      },
+                    );
                   },
                 );
               },

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "855692589832",
+    "project_id": "recipes-27cfa",
+    "storage_bucket": "recipes-27cfa.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:855692589832:android:a0f6a24e53bf7f02594abd",
+        "android_client_info": {
+          "package_name": "com.example.lab2"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDb98FWcCtQmE7HPuzPXQeP_e1gcSLhQ7g"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

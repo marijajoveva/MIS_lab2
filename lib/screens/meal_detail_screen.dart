@@ -7,7 +7,9 @@ class MealDetailScreen extends StatelessWidget {
   MealDetailScreen({required this.meal});
 
   void _launchURL(String url) async {
-    if (await canLaunch(url)) await launch(url);
+    if (await canLaunch(url)) {
+      await launch(url);
+    }
   }
 
   @override

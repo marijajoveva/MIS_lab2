@@ -7,78 +7,58 @@ class ApiService {
   static const String baseUrl = "https://www.themealdb.com/api/json/v1/1";
 
   Future<List<Category>> getCategories() async {
-    try {
-      final response = await http.get(Uri.parse('$baseUrl/categories.php'));
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        return (data['categories'] as List)
-            .map((json) => Category.fromJson(json))
-            .toList();
-      } else {
-        throw Exception('Failed to load categories');
-      }
-    } catch (e) {
-      throw Exception('Error: $e');
+    final response = await http.get(Uri.parse('$baseUrl/categories.php'));
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      return (data['categories'] as List)
+          .map((json) => Category.fromJson(json))
+          .toList();
+    } else {
+      throw Exception('Failed to load categories');
     }
   }
 
   Future<List<Meal>> getMealsByCategory(String category) async {
-    try {
-      final response = await http.get(Uri.parse('$baseUrl/filter.php?c=$category'));
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        return (data['meals'] as List)
-            .map((json) => Meal(
-            id: json['idMeal'], name: json['strMeal'], thumbnail: json['strMealThumb']))
-            .toList();
-      } else {
-        throw Exception('Failed to load meals');
-      }
-    } catch (e) {
-      throw Exception('Error: $e');
+    final response = await http.get(Uri.parse('$baseUrl/filter.php?c=$category'));
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      return (data['meals'] as List)
+          .map((json) => Meal(
+          id: json['idMeal'], name: json['strMeal'], thumbnail: json['strMealThumb']))
+          .toList();
+    } else {
+      throw Exception('Failed to load meals');
     }
   }
 
   Future<Meal> getMealDetail(String id) async {
-    try {
-      final response = await http.get(Uri.parse('$baseUrl/lookup.php?i=$id'));
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        return Meal.fromJson(data['meals'][0]);
-      } else {
-        throw Exception('Failed to load meal detail');
-      }
-    } catch (e) {
-      throw Exception('Error: $e');
+    final response = await http.get(Uri.parse('$baseUrl/lookup.php?i=$id'));
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      return Meal.fromJson(data['meals'][0]);
+    } else {
+      throw Exception('Failed to load meal detail');
     }
   }
 
   Future<List<Meal>> searchMeals(String query) async {
-    try {
-      final response = await http.get(Uri.parse('$baseUrl/search.php?s=$query'));
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        if (data['meals'] == null) return [];
-        return (data['meals'] as List).map((json) => Meal.fromJson(json)).toList();
-      } else {
-        throw Exception('Failed to search meals');
-      }
-    } catch (e) {
-      throw Exception('Error: $e');
+    final response = await http.get(Uri.parse('$baseUrl/search.php?s=$query'));
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      if (data['meals'] == null) return [];
+      return (data['meals'] as List).map((json) => Meal.fromJson(json)).toList();
+    } else {
+      throw Exception('Failed to search meals');
     }
   }
 
   Future<Meal> getRandomMeal() async {
-    try {
-      final response = await http.get(Uri.parse('$baseUrl/random.php'));
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        return Meal.fromJson(data['meals'][0]);
-      } else {
-        throw Exception('Failed to load random meal');
-      }
-    } catch (e) {
-      throw Exception('Error: $e');
+    final response = await http.get(Uri.parse('$baseUrl/random.php'));
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      return Meal.fromJson(data['meals'][0]);
+    } else {
+      throw Exception('Failed to load random meal');
     }
   }
 }

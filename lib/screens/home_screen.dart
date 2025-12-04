@@ -4,14 +4,20 @@ import '../widgets/category_card.dart';
 import 'category_meals_screen.dart';
 import '../models/category.dart';
 import 'meal_detail_screen.dart';
+import 'favorite_meals_screen.dart';
+import '../services/favorites_service.dart';
 
 class HomeScreen extends StatefulWidget {
+  const HomeScreen({Key? key}) : super(key: key);
+
   @override
   _HomeScreenState createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> {
   final ApiService api = ApiService();
+  final FavoritesService favoritesService = FavoritesService();
+
   List<Category> categories = [];
   List<Category> filteredCategories = [];
   bool isLoading = true;
@@ -20,70 +26,94 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    fetchCategories();
+    _fetchCategories();
   }
 
-  void fetchCategories() async {
+  Future<void> _fetchCategories() async {
+    setState(() {
+      isLoading = true;
+      error = null;
+    });
+
     try {
-      categories = await api.getCategories();
+      final fetchedCategories = await api.getCategories();
       setState(() {
-        filteredCategories = categories;
+        categories = fetchedCategories;
+        filteredCategories = fetchedCategories;
         isLoading = false;
       });
     } catch (e) {
       setState(() {
-        error = e.toString();
+        error = 'Failed to load categories: $e';
         isLoading = false;
       });
     }
   }
 
-  void searchCategory(String query) {
-    final results = categories.where((c) => c.name.toLowerCase().contains(query.toLowerCase())).toList();
+  void _searchCategory(String query) {
+    final results = categories
+        .where((c) => c.name.toLowerCase().contains(query.toLowerCase()))
+        .toList();
     setState(() {
       filteredCategories = results;
     });
   }
 
-  void showRandomMeal() async {
+  Future<void> _showRandomMeal() async {
     try {
       final meal = await api.getRandomMeal();
-      Navigator.push(context, MaterialPageRoute(builder: (_) => MealDetailScreen(meal: meal)));
+      if (!mounted) return;
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => MealDetailScreen(meal: meal)),
+      );
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to load random meal')));
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('Failed to load random meal')));
+      }
     }
+  }
+
+  void _openFavorites() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => FavoriteMealsScreen()),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Categories'),
+        title: const Text('Categories'),
         actions: [
-          IconButton(icon: Icon(Icons.casino), onPressed: showRandomMeal),
+          IconButton(icon: const Icon(Icons.casino), onPressed: _showRandomMeal),
+          IconButton(icon: const Icon(Icons.favorite), onPressed: _openFavorites),
         ],
       ),
       body: isLoading
-          ? Center(child: CircularProgressIndicator())
-          : error != null
+          ? const Center(child: CircularProgressIndicator())
+          : (error != null)
           ? Center(child: Text(error!))
           : Column(
         children: [
           Padding(
-            padding: EdgeInsets.all(8),
+            padding: const EdgeInsets.all(8.0),
             child: TextField(
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 hintText: 'Search categories...',
                 border: OutlineInputBorder(),
                 prefixIcon: Icon(Icons.search),
               ),
-              onChanged: searchCategory,
+              onChanged: _searchCategory,
             ),
           ),
           Expanded(
             child: GridView.builder(
-              padding: EdgeInsets.all(8),
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              padding: const EdgeInsets.all(8.0),
+              gridDelegate:
+              const SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 2,
                 crossAxisSpacing: 8,
                 mainAxisSpacing: 8,
@@ -98,7 +128,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (_) => CategoryMealsScreen(categoryName: category.name),
+                        builder: (_) => CategoryMealsScreen(
+                          categoryName: category.name,
+                        ),
                       ),
                     );
                   },
